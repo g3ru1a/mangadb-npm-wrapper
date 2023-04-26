@@ -1,6 +1,6 @@
 {
   "name": "mangadb-api",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "JS API Wrapper for the MangaDB API",
   "type": "module",
   "main": "dist/index.js",
