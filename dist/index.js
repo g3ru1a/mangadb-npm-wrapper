@@ -27,4 +27,7 @@ class MangaDBAPI {
     }
 }
 export { MangaDBAPI, AlreadyAuthenticatedError, UnauthenticatedError, UnprocessableContentError, UserNotFoundError, };
+export * from "./data-interfaces/models";
+export * from "./data-interfaces/auth";
+export * from "./data-interfaces/errors";
 //# sourceMappingURL=index.js.map

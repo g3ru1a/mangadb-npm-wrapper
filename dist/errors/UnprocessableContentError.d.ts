@@ -1,3 +1,5 @@
+import { UnprocessableContentErrorData } from "../data-interfaces/errors";
 export declare class UnprocessableContentError extends Error {
-    constructor(message?: string);
+    data: UnprocessableContentErrorData;
+    constructor(data: object, message?: string);
 }
