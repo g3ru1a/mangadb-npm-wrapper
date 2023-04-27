@@ -3,6 +3,7 @@ import { AlreadyAuthenticatedError } from "./errors/AlreadyAuthenticatedError";
 import { UnprocessableContentError } from "./errors/UnprocessableContentError";
 import { UserNotFoundError } from "./errors/UserNotFoundError";
 import FetchHelper from "./utils/fetch-helper";
+import { BadPayloadError } from "./errors/BadPayloadError";
 export class Auth {
     api;
     constructor(api) {
@@ -44,6 +45,72 @@ export class Auth {
         return authData.token;
     }
     /**
+     * Verifies the user's credentials and authenticates them.
+     * @param payload
+     * @throws {BadPayloadError, Error}
+     */
+    async verifyEmail(payload) {
+        const url = this.api.baseURL + "/verify";
+        const config = FetchHelper.getConfig("POST");
+        const response = await fetch(url, {
+            ...config,
+            body: JSON.stringify({ payload: payload })
+        });
+        if (response.status === 200) {
+            const data = await response.json();
+            localStorage.setItem("auth", JSON.stringify(data));
+            return true;
+        }
+        switch (response.status) {
+            case 400:
+                throw new BadPayloadError();
+            default:
+                throw new Error("Unknown error");
+        }
+    }
+    async resetPassword(email) {
+        const url = this.api.baseURL + "/password/reset";
+        const config = FetchHelper.getConfig("POST");
+        const response = await fetch(url, {
+            ...config,
+            body: JSON.stringify({ email: email })
+        });
+        if (response.status === 200) {
+            return true;
+        }
+        switch (response.status) {
+            case 404:
+                throw new UserNotFoundError();
+            case 422:
+                throw new UnprocessableContentError(await response.json());
+            default:
+                throw new Error("Unknown error");
+        }
+    }
+    async verifyPasswordResetToken(payload, password, password_confirmation) {
+        const url = this.api.baseURL + "/password/verify";
+        const config = FetchHelper.getConfig("POST");
+        const response = await fetch(url, {
+            ...config,
+            body: JSON.stringify({
+                payload: payload,
+                password: password,
+                password_confirmation: password_confirmation
+            })
+        });
+        if (response.status === 200) {
+            return true;
+        }
+        switch (response.status) {
+            case 422:
+                throw new UnprocessableContentError(await response.json());
+            case 400:
+                throw new BadPayloadError();
+            default:
+                throw new Error("Unknown error");
+        }
+    }
+    /**
      * Logs out the user.
      * @throws {UnauthenticatedError}
      */
@@ -65,6 +132,14 @@ export class Auth {
             console.error(error);
         }
     }
+    /**
+     * Registers the user
+     * @param name
+     * @param email
+     * @param password
+     * @param password_confirmation
+     * @throws {AlreadyAuthenticatedError, UnprocessableContentError, Error}
+     */
     async register(name, email, password, password_confirmation) {
         if (await this.isAuthenticated()) {
             throw new AlreadyAuthenticatedError();

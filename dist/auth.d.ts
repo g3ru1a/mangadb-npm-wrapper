@@ -1,6 +1,16 @@
 import { MangaDBAPI } from "./index";
 import { AuthData } from "./data-interfaces/auth";
-export declare class Auth {
+export interface IAuth {
+    isAuthenticated(should_throw: boolean): Promise<boolean>;
+    getAuthToken(): string;
+    logout(): Promise<void>;
+    login(email: string, password: string): Promise<AuthData>;
+    register(name: string, email: string, password: string, password_confirmation: string): Promise<boolean>;
+    verifyEmail(payload: string): Promise<boolean>;
+    resetPassword(email: string): Promise<boolean>;
+    verifyPasswordResetToken(payload: string, password: string, password_confirmation: string): Promise<boolean>;
+}
+export declare class Auth implements IAuth {
     private api;
     constructor(api: MangaDBAPI);
     /**
@@ -15,10 +25,26 @@ export declare class Auth {
      */
     getAuthToken(): string;
     /**
+     * Verifies the user's credentials and authenticates them.
+     * @param payload
+     * @throws {BadPayloadError, Error}
+     */
+    verifyEmail(payload: string): Promise<boolean>;
+    resetPassword(email: string): Promise<boolean>;
+    verifyPasswordResetToken(payload: string, password: string, password_confirmation: string): Promise<boolean>;
+    /**
      * Logs out the user.
      * @throws {UnauthenticatedError}
      */
     logout(): Promise<void>;
+    /**
+     * Registers the user
+     * @param name
+     * @param email
+     * @param password
+     * @param password_confirmation
+     * @throws {AlreadyAuthenticatedError, UnprocessableContentError, Error}
+     */
     register(name: string, email: string, password: string, password_confirmation: string): Promise<boolean>;
     /**
      * Authenticates the user.
